@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Icon Pack Saver</string>
+    <string name="pack_name_hint">Icon Pack Name</string>
+    <string name="package_name_hint">Package Name (e.g., com.myicons.pack)</string>
+    <string name="select_icon">Select Icon</string>
+    <string name="add_app">Add App</string>
+    <string name="build_pack">Build Icon Pack</string>
+    <string name="upload_launcher_icon">Upload Launcher Icon</string>
+    <string name="building_pack">Building Icon Pack...</string>
+    <string name="pack_built_success">Icon Pack built successfully!</string>
+    <string name="pack_built_failed">Failed to build icon pack</string>
+    <string name="install_pack">Install Pack</string>
+    <string name="no_apps_added">No apps added yet</string>
+    <string name="app_name_label">App Name</string>
+    <string name="component_name_label">Component/Package Name</string>
+    <string name="component_hint">com.example.app/.MainActivity</string>
+    <string name="custom_icon">Custom Icon</string>
+    <string name="select_apps">Select Apps</string>
+    <string name="saved_apps">Saved Apps</string>
+    <string name="grant_permission">Grant Storage Permission</string>
+    <string name="permission_required">Storage permission is required to save and build icon packs</string>
+</resources>
