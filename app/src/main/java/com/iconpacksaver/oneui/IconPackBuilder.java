@@ -25,8 +25,15 @@ public class IconPackBuilder {
 
     public File buildIconPack(String packName, String packageName, Bitmap launcherIcon, List<AppIconInfo> apps) {
         try {
-            // Create output directory
-            File outputDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "IconPacks");
+            // Use app-specific external storage instead of deprecated getExternalStoragePublicDirectory
+            File outputDir;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                // For Android 10+, use app-specific external storage
+                outputDir = new File(context.getExternalFilesDir(null), "IconPacks");
+            } else {
+                // For older versions, use Downloads directory
+                outputDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "IconPacks");
+            }
             if (!outputDir.exists()) {
                 outputDir.mkdirs();
             }

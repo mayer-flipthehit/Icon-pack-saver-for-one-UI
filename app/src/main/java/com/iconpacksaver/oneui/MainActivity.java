@@ -9,8 +9,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -110,10 +108,16 @@ public class MainActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
-                        launcherIconBitmap = loadBitmapFromUri(imageUri);
-                        if (launcherIconBitmap != null) {
-                            launcherIconPreview.setImageBitmap(launcherIconBitmap);
-                        }
+                        // Load bitmap in background thread
+                        new Thread(() -> {
+                            Bitmap bitmap = loadBitmapFromUri(imageUri);
+                            runOnUiThread(() -> {
+                                launcherIconBitmap = bitmap;
+                                if (launcherIconBitmap != null) {
+                                    launcherIconPreview.setImageBitmap(launcherIconBitmap);
+                                }
+                            });
+                        }).start();
                     }
                 });
 
@@ -122,10 +126,16 @@ public class MainActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
-                        tempIconBitmap = loadBitmapFromUri(imageUri);
-                        if (tempIconBitmap != null && dialogIconPreview != null) {
-                            dialogIconPreview.setImageBitmap(tempIconBitmap);
-                        }
+                        // Load bitmap in background thread
+                        new Thread(() -> {
+                            Bitmap bitmap = loadBitmapFromUri(imageUri);
+                            runOnUiThread(() -> {
+                                tempIconBitmap = bitmap;
+                                if (tempIconBitmap != null && dialogIconPreview != null) {
+                                    dialogIconPreview.setImageBitmap(tempIconBitmap);
+                                }
+                            });
+                        }).start();
                     }
                 });
     }
@@ -266,7 +276,21 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap loadBitmapFromUri(Uri uri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);
-            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            if (inputStream == null) return null;
+
+            // First decode with inJustDecodeBounds=true to check dimensions
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(inputStream, null, options);
+            inputStream.close();
+
+            // Calculate inSampleSize
+            options.inSampleSize = calculateInSampleSize(options, 512, 512);
+
+            // Decode bitmap with inSampleSize set
+            options.inJustDecodeBounds = false;
+            inputStream = getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
             if (inputStream != null) {
                 inputStream.close();
             }
@@ -275,6 +299,24 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
     }
 
     private void updateEmptyView() {
@@ -288,17 +330,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!Environment.isExternalStorageManager()) {
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                intent.setData(Uri.parse("package:" + getPackageName()));
-                startActivity(intent);
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // Android 13+ requires READ_MEDIA_IMAGES permission
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_IMAGES)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE},
+                        new String[]{Manifest.permission.READ_MEDIA_IMAGES},
+                        PERMISSION_REQUEST_CODE);
+            }
+        } else {
+            // Android 12 and below use READ_EXTERNAL_STORAGE
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         PERMISSION_REQUEST_CODE);
             }
         }
