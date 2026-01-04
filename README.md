@@ -29,15 +29,48 @@ An Android application designed for Samsung Galaxy One UI devices that allows us
 
 ## Installation
 
-1. Clone this repository
-2. Open in Android Studio
-3. Build and install on your device
+### Option 1: Using Android Studio (Recommended)
 
+1. Clone this repository:
+```bash
+git clone https://github.com/mayer-flipthehit/Icon-pack-saver-for-one-UI.git
+```
+
+2. Open Android Studio
+
+3. Click "Open an Existing Project" and select the cloned directory
+
+4. Wait for Gradle sync to complete
+
+5. Connect your Samsung Galaxy device with USB debugging enabled
+
+6. Click "Run" or press Shift+F10 to build and install the app
+
+### Option 2: Using Command Line
+
+1. Clone this repository:
 ```bash
 git clone https://github.com/mayer-flipthehit/Icon-pack-saver-for-one-UI.git
 cd Icon-pack-saver-for-one-UI
+```
+
+2. Set up the project (first time only):
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+3. Build the APK:
+```bash
 ./gradlew assembleDebug
 ```
+
+4. Install on your device:
+```bash
+./gradlew installDebug
+```
+
+The APK will be located at: `app/build/outputs/apk/debug/app-debug.apk`
 
 ## Usage
 
