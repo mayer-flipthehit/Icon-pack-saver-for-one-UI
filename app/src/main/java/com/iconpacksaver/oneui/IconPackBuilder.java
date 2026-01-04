@@ -173,16 +173,11 @@ public class IconPackBuilder {
                 ZipEntry zipEntry = new ZipEntry(relativePath);
                 zos.putNextEntry(zipEntry);
 
-                FileOutputStream fis = new FileOutputStream(file);
+                java.io.FileInputStream fis = new java.io.FileInputStream(file);
                 byte[] buffer = new byte[1024];
                 int length;
-                InputStream inputStream = context.getContentResolver().openInputStream(
-                        android.net.Uri.fromFile(file));
-                if (inputStream != null) {
-                    while ((length = inputStream.read(buffer)) > 0) {
-                        zos.write(buffer, 0, length);
-                    }
-                    inputStream.close();
+                while ((length = fis.read(buffer)) > 0) {
+                    zos.write(buffer, 0, length);
                 }
                 fis.close();
                 zos.closeEntry();
