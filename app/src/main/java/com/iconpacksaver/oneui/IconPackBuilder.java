@@ -2,7 +2,6 @@ package com.iconpacksaver.oneui;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.Environment;
 import android.util.Log;
 
 import java.io.File;
@@ -25,15 +24,8 @@ public class IconPackBuilder {
 
     public File buildIconPack(String packName, String packageName, Bitmap launcherIcon, List<AppIconInfo> apps) {
         try {
-            // Use app-specific external storage instead of deprecated getExternalStoragePublicDirectory
-            File outputDir;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                // For Android 10+, use app-specific external storage
-                outputDir = new File(context.getExternalFilesDir(null), "IconPacks");
-            } else {
-                // For older versions, use Downloads directory
-                outputDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "IconPacks");
-            }
+            // Use app-specific external storage for all Android versions (scoped storage)
+            File outputDir = new File(context.getExternalFilesDir(null), "IconPacks");
             if (!outputDir.exists()) {
                 outputDir.mkdirs();
             }
